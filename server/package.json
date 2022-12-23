@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@trpc/server": "^10.7.0",
+    "node-stream-zip": "^1.15.0",
     "zod": "^3.0.0"
   },
   "devDependencies": {

@@ -48,3 +48,8 @@ https://firebase.google.com/docs/storage/web/upload-files
 
 https://data.binance.vision/?prefix=data/spot/daily/klines/1INCHBTC/1s/
 https://www.binance.com/en/support/faq/how-to-download-historical-market-data-on-binance-5810ae42176b4770b880ce1f14932262
+
+
+### AWS
+
+https://docs.aws.amazon.com/AmazonSimpleDB/latest/DeveloperGuide/Welcome.html
