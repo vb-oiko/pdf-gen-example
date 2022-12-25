@@ -2,6 +2,7 @@ const http = require("https"); // or 'https' for https:// URLs
 const fs = require("fs");
 const path = require("path");
 const StreamZip = require("node-stream-zip");
+const PDFDocument = require("pdfkit-table");
 
 const ticker = "1INCHBTC-1s-2022-12-22";
 
@@ -79,16 +80,54 @@ async function cleanTempFolder() {
   }
 }
 
+function readCsvFile(filename) {
+  const pathname = path.resolve(WORK_FOLDER, `${filename}.csv`);
+  const content = fs.readFileSync(pathname, "utf8");
+  // TODO remove ows limit
+  const rows = content.split("\n").slice(0, 1000);
+  return rows.map((row) => row.split(","));
+}
+
+async function genPdf(filename) {
+  const rows = readCsvFile(filename);
+
+  let doc = new PDFDocument({ margin: 30, size: "A4" });
+  const pathname = path.resolve(WORK_FOLDER, `${filename}.pdf`);
+  doc.pipe(fs.createWriteStream(pathname));
+
+  const table = {
+    title: filename,
+    headers: [
+      "Open time",
+      "Open",
+      "High",
+      "Low",
+      "Close",
+      "Volume",
+      "Close time",
+      "Quote asset volume",
+      "Number of trades",
+      "Taker buy base asset volume",
+      "Taker buy quote asset volume",
+      "Ignore",
+    ],
+    rows,
+  };
+
+  await doc.table(table, {});
+  doc.end();
+}
+
 async function processJob(ticker) {
   cleanTempFolder();
   await downloadZipFile(ticker);
   await unzipFileToCsvFile(ticker);
+  await genPdf(ticker);
   console.warn("Completed!");
 }
 
 processJob(ticker);
 
 module.exports = {
-  downloadZipData: downloadZipFile,
-  unzipToCsv: unzipFileToCsvFile,
+  processJob,
 };

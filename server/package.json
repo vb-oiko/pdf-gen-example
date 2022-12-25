@@ -8,8 +8,11 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.238.0",
     "@trpc/server": "^10.7.0",
+    "dotenv": "^16.0.3",
     "node-stream-zip": "^1.15.0",
+    "pdfkit-table": "^0.1.99",
     "zod": "^3.0.0"
   },
   "devDependencies": {
