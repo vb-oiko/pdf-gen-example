@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCInstance } from "..";
 import { FREQUENCIES, TICKERS } from "../constant/constants";
-import { TickerDate, ReportJob } from "../constant/types";
+import { TickerDate, Report } from "../constant/types";
 import { isValidTickerDate } from "../utils/isValidTickerDate";
 
 export const listReportsRequest = z
@@ -40,7 +40,7 @@ export default class ReportController {
 }
 
 export type ListReportsResponse = {
-  list: ReportJob[];
+  list: Report[];
   total: number;
 };
 

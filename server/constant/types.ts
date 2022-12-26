@@ -10,7 +10,7 @@ export type FinishedJobStatus = Extract<JobStatus, "finished">;
 
 export type TickerDate = string & { __type: "TickerDate" };
 
-export interface BaseReportJob {
+export interface BaseReport {
   id: string;
   created: number;
   date: TickerDate;
@@ -18,18 +18,18 @@ export interface BaseReportJob {
   frequency: Frequency;
 }
 
-export interface UnfinishedReportJob {
+export interface UnfinishedReport extends BaseReport {
   status: UnfinishedJobStatus;
 }
 
-export interface FinishedReportJob {
+export interface FinishedReport extends BaseReport {
   status: FinishedJobStatus;
   url: string;
 }
 
-export type ReportJob = UnfinishedReportJob | FinishedReportJob;
+export type Report = UnfinishedReport | FinishedReport;
 
-export interface Repository<T> {
+export interface Repository<T extends { id: string; created: number }> {
   list: ({
     limit,
     offset,
@@ -38,5 +38,12 @@ export interface Repository<T> {
     offset?: number;
   }) => Promise<T[]>;
 
-  add: ({ limit, offset }: { limit?: number; offset?: number }) => Promise<T[]>;
+  create: (insertEntity: Omit<T, "id" | "created">) => Promise<{ id: string }>;
+
+  update: (
+    id: string,
+    insertEntity: Partial<Omit<T, "id" | "created">>
+  ) => Promise<void>;
+
+  getById: (id: string) => Promise<T>;
 }
