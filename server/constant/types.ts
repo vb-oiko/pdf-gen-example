@@ -29,21 +29,31 @@ export interface FinishedReport extends BaseReport {
 
 export type Report = UnfinishedReport | FinishedReport;
 
-export interface Repository<T extends { id: string; created: number }> {
-  list: ({
-    limit,
-    offset,
-  }: {
-    limit?: number;
-    offset?: number;
-  }) => Promise<T[]>;
+export type PaginationQuery = {
+  limit?: number;
+  offset?: number;
+};
 
-  create: (insertEntity: Omit<T, "id" | "created">) => Promise<{ id: string }>;
+export type PaginatedResponse<T> = { list: T[]; total: number };
 
-  update: (
-    id: string,
-    insertEntity: Partial<Omit<T, "id" | "created">>
-  ) => Promise<void>;
+type AutoAssignedFieldsType = { id: string; created: number };
+type AutoAssignedFields = keyof AutoAssignedFieldsType;
+
+export type InsertEntity<T extends AutoAssignedFieldsType> = Omit<
+  T,
+  AutoAssignedFields
+>;
+
+export type UpdateEntity<T extends AutoAssignedFieldsType> = Partial<
+  Omit<T, AutoAssignedFields>
+>;
+
+export interface Repository<T extends AutoAssignedFieldsType> {
+  list: ({ limit, offset }: PaginationQuery) => Promise<PaginatedResponse<T>>;
+
+  create: (insertEntity: InsertEntity<T>) => Promise<{ id: string }>;
+
+  update: (id: string, updateEntity: UpdateEntity<T>) => Promise<void>;
 
   getById: (id: string) => Promise<T>;
 }

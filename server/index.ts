@@ -3,9 +3,14 @@ import { createHTTPHandler } from "@trpc/server/adapters/standalone";
 import http from "http";
 import AppSettingsController from "./controller/AppSettingsController";
 import ReportController from "./controller/ReportController";
+import { DynamoDbReportRepository } from "./repository/DynamoDbReportRepository";
+import { ReportService } from "./service/ReportService";
+
+const reportRepository = new DynamoDbReportRepository();
+const reportService = new ReportService(reportRepository);
 
 const trpcInstance = initTRPC.create();
-const reportController = new ReportController(trpcInstance);
+const reportController = new ReportController(trpcInstance, reportService);
 const appSettingsController = new AppSettingsController(trpcInstance);
 
 const router = trpcInstance.router;
