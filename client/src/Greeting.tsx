@@ -1,7 +1,7 @@
 import { trpc } from "./utils/trpc";
 
 export function Greeting() {
-  const greeting = trpc.greeting.useQuery({ name: "tRPC user!!!" });
+  const { data } = trpc.listReports.useQuery();
 
-  return <div>{greeting.data?.text}</div>;
+  return <div>{JSON.stringify(data, null, 2)}</div>;
 }
