@@ -1,8 +1,9 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { httpBatchLink } from '@trpc/client';
-import { useState } from 'react';
-import { Greeting } from './Greeting';
-import { trpc } from './utils/trpc';
+import "@picocss/pico";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { httpBatchLink } from "@trpc/client";
+import { useState } from "react";
+import { trpc } from "./utils/trpc";
+import { ReportView } from "./views/ReportView";
 
 export function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -10,15 +11,17 @@ export function App() {
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: 'http://localhost:2022',
+          url: "http://localhost:2022",
         }),
       ],
-    }),
+    })
   );
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <Greeting />
+        <main className="container">
+          <ReportView />
+        </main>
       </QueryClientProvider>
     </trpc.Provider>
   );
