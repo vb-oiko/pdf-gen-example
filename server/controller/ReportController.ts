@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { TRPCInstance } from "..";
-import { ReportJob, UnfinishedReportJob } from "../constant/types";
-import { getCurrentTimestamp } from "../utils/getCurrentTimestamp";
+import { FREQUENCIES, TICKERS } from "../constant/constants";
+import { TickerDate, ReportJob } from "../constant/types";
+import { isValidTickerDate } from "../utils/isValidTickerDate";
 
 export const listReportsRequest = z
   .object({
@@ -12,7 +13,9 @@ export const listReportsRequest = z
 
 export const createReportRequest = z
   .object({
-    ticker: z.string(),
+    ticker: z.enum(TICKERS),
+    date: z.custom<TickerDate>(isValidTickerDate),
+    frequency: z.enum(FREQUENCIES),
   })
   .nullish();
 
@@ -29,9 +32,9 @@ export default class ReportController {
 
   createReport() {
     return this.trpcInstance.procedure
-      .input(listReportsRequest)
+      .input(createReportRequest)
       .query((): CreateReportResponse => {
-        return { id: "1", status: "new", created: getCurrentTimestamp() };
+        return { id: "1" };
       });
   }
 }
@@ -41,4 +44,6 @@ export type ListReportsResponse = {
   total: number;
 };
 
-export type CreateReportResponse = UnfinishedReportJob;
+export type CreateReportResponse = {
+  id: string;
+};

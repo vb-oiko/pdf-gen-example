@@ -1,14 +1,18 @@
 import { initTRPC } from "@trpc/server";
 import { createHTTPHandler } from "@trpc/server/adapters/standalone";
 import http from "http";
+import AppSettingsController from "./controller/AppSettingsController";
 import ReportController from "./controller/ReportController";
 
 const trpcInstance = initTRPC.create();
 const reportController = new ReportController(trpcInstance);
+const appSettingsController = new AppSettingsController(trpcInstance);
 
 const router = trpcInstance.router;
 const appRouter = router({
   listReports: reportController.listReports(),
+  createReport: reportController.createReport(),
+  getAppSettings: appSettingsController.getAppSettings(),
 });
 
 const handler = createHTTPHandler({
