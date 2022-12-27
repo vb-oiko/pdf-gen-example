@@ -1,13 +1,20 @@
 import React from "react";
 import { CreateReportPayload } from "../../../server/service/ReportService";
-import { useAppSettings } from "../hooks/useAppSettings";
+import { trpc } from "../utils/trpc";
 
 export interface CreateReportFormProps {}
 
+const isFormDataValid = (
+  formData: Partial<CreateReportPayload> | undefined
+): formData is CreateReportPayload => {
+  return Boolean(formData?.ticker && formData.frequency && formData.date);
+};
+
 export const CreateReportForm: React.FC<CreateReportFormProps> = ({}) => {
-  const appSettings = useAppSettings();
   const [formData, setFormData] =
     React.useState<Partial<CreateReportPayload>>();
+  const mutation = trpc.createReport.useMutation();
+  const { data: appSettings } = trpc.getAppSettings.useQuery();
 
   const handleChange = React.useCallback(
     (ev: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
@@ -17,7 +24,11 @@ export const CreateReportForm: React.FC<CreateReportFormProps> = ({}) => {
     []
   );
 
-  const handleSubmit = React.useCallback(() => {}, []);
+  const handleSubmit = React.useCallback(() => {
+    if (isFormDataValid(formData)) {
+      mutation.mutate(formData);
+    }
+  }, [formData]);
 
   if (!appSettings) {
     return null;
@@ -29,7 +40,7 @@ export const CreateReportForm: React.FC<CreateReportFormProps> = ({}) => {
     frequencies,
   } = appSettings;
 
-  const isFormValid = formData?.ticker && formData.frequency && formData.date;
+  const isFormValid = isFormDataValid(formData);
 
   return (
     <div className="grid">
@@ -62,6 +73,7 @@ export const CreateReportForm: React.FC<CreateReportFormProps> = ({}) => {
         type="submit"
         className={isFormValid ? "" : "secondary"}
         disabled={!isFormValid}
+        onClick={handleSubmit}
       >
         Create report
       </button>

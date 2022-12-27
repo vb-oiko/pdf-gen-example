@@ -33,7 +33,7 @@ export default class ReportController {
   createReport() {
     return this.trpcInstance.procedure
       .input(createReportRequest)
-      .query(async ({ input }): Promise<CreateReportResponse> => {
+      .mutation(async ({ input }): Promise<CreateReportResponse> => {
         return this.reportService.create(input);
       });
   }
