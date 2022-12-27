@@ -1,10 +1,10 @@
-import { CreateReportButton } from "../components/CreateReportButton";
+import { CreateReportForm } from "../components/CreateReportForm";
 import { ReportList } from "../components/ReportList";
 
 export const ReportView = () => (
   <article>
     <header>
-      <CreateReportButton />
+      <CreateReportForm />
     </header>
     <ReportList />
     <footer></footer>

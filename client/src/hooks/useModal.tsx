@@ -5,6 +5,8 @@ export interface ModalProps {
   onCancel?: () => {};
   onConfirm?: () => {};
   title?: string;
+  form?: string;
+  confirmText?: string;
 }
 
 export const useModal = () => {
@@ -19,6 +21,8 @@ export const useModal = () => {
     onCancel = noOp,
     onConfirm = noOp,
     title,
+    form,
+    confirmText = "Confirm",
   }) => {
     const handleCancel = React.useCallback(() => {
       onCancel();
@@ -42,7 +46,7 @@ export const useModal = () => {
               onClick={handleCancel}
             ></a>
             {title ? <h3>{title}</h3> : null}
-            <p>{children}</p>
+            {children}
             <footer>
               <a
                 href="#cancel"
@@ -52,9 +56,20 @@ export const useModal = () => {
               >
                 Cancel
               </a>
-              <a href="#confirm" role="button" onClick={handleConfirm}>
-                Confirm
-              </a>
+
+              <button
+                style={{
+                  display: "inline-block",
+                  width: "initial",
+                  marginLeft: "10px",
+                }}
+                onClick={handleConfirm}
+                role="button"
+                form={form}
+                type="submit"
+              >
+                {confirmText}
+              </button>
             </footer>
           </article>
         </dialog>
