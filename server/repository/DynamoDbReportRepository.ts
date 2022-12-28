@@ -1,3 +1,4 @@
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   InsertEntity,
   PaginationQuery,
@@ -7,6 +8,8 @@ import {
 } from "../constant/types";
 
 export class DynamoDbReportRepository implements Repository<Report> {
+  constructor(private readonly dynamoDBClient: DynamoDBClient) {}
+
   async list({ limit, offset }: PaginationQuery) {
     return { list: [], total: 0 };
   }
