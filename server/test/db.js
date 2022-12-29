@@ -29,16 +29,16 @@ const {
   //   } catch (err) {
   //     console.error(err);
 
-  // const putItem = new PutItemCommand({
-  //   Item: { id: { S: "1" }, created: { N: Date.now().toString() } },
-  //   TableName: TableNames.jobs,
-  // });
-  // try {
-  //   const results = await client.send(putItem);
-  //   console.log(results);
-  // } catch (err) {
-  //   console.error(err);
-  // }
+  const putItem = new PutItemCommand({
+    Item: { id: { S: "1" }, created: { N: Date.now().toString() } },
+    TableName: TableNames.jobs,
+  });
+  try {
+    const results = await client.send(putItem);
+    console.log(results);
+  } catch (err) {
+    console.error(err);
+  }
 
   const scanCommand = new ScanCommand({
     TableName: TableNames.jobs,
