@@ -1,4 +1,3 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   InsertEntity,
   PaginationQuery,
@@ -7,15 +6,47 @@ import {
   UpdateEntity,
 } from "../constant/types";
 
+import { nanoid } from "nanoid";
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  ScanCommand,
+} from "@aws-sdk/lib-dynamodb";
+
 export class DynamoDbReportRepository implements Repository<Report> {
-  constructor(private readonly dynamoDBClient: DynamoDBClient) {}
+  private readonly tableName = "pdf-gen-example.jobs";
+
+  constructor(private readonly dynamoDBClient: DynamoDBDocumentClient) {}
 
   async list({ limit, offset }: PaginationQuery) {
-    return { list: [], total: 0 };
+    const scanCommand = new ScanCommand({
+      TableName: this.tableName,
+    });
+    const { Count, Items } = await this.dynamoDBClient.send(scanCommand);
+
+    return { list: (Items as Report[]) || [], total: Count || 0 };
   }
 
   async create(insertReport: InsertEntity<Report>) {
-    return { id: "1" };
+    const { ticker, frequency, date } = insertReport;
+    const id = nanoid();
+
+    const putItem = new PutCommand({
+      Item: {
+        id,
+        created: Date.now(),
+        ticker,
+        frequency,
+        date,
+        status: "new",
+      },
+
+      TableName: this.tableName,
+    });
+
+    await this.dynamoDBClient.send(putItem);
+
+    return { id };
   }
 
   async update(id: string, partialReport: UpdateEntity<Report>) {}

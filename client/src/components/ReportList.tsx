@@ -1,4 +1,5 @@
 import { trpc } from "../utils/trpc";
+import { format } from "date-fns";
 
 export const ReportList = () => {
   const { data } = trpc.listReports.useQuery({});
@@ -13,7 +14,6 @@ export const ReportList = () => {
     <table>
       <thead>
         <tr>
-          <th>ID</th>
           <th>Created</th>
           <th>Date</th>
           <th>Ticker</th>
@@ -23,12 +23,10 @@ export const ReportList = () => {
       </thead>
       <tbody>
         {list.map((report) => (
-          <tr>
-            <td>{report.id}</td>
-            <td>{report.created}</td>
+          <tr key={report.id}>
+            <td>{format(new Date(report.created), "yyyy-MM-dd HH:mm:ss")}</td>
             <td>{report.date}</td>
             <td>{report.ticker}</td>
-            <td>{report.frequency}</td>
             <td>{report.frequency}</td>
             <td>{report.status}</td>
           </tr>
