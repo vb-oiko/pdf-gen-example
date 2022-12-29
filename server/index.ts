@@ -21,7 +21,10 @@ const awsConfiguration = getAwsConfiguration(
 const dynamoDBClient = new DynamoDBClient(awsConfiguration);
 const ddbDocClient = DynamoDBDocumentClient.from(dynamoDBClient);
 
-const reportRepository = new DynamoDbReportRepository(ddbDocClient);
+const reportRepository = await DynamoDbReportRepository.init(
+  dynamoDBClient,
+  ddbDocClient
+);
 const reportService = new ReportService(reportRepository);
 
 const trpcInstance = initTRPC.create();
@@ -36,6 +39,7 @@ const appRouter = router({
 });
 
 const server = createServer(appRouter);
+
 server.listen(2022);
 
 export type AppRouter = typeof appRouter;

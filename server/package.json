@@ -2,6 +2,7 @@
   "name": "@examples/minimal-react-server",
   "version": "10.7.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch index.ts",

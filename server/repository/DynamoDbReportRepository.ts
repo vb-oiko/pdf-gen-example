@@ -12,17 +12,50 @@ import {
   PutCommand,
   ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
+import {
+  DynamoDBClient,
+  ListTablesCommand,
+  CreateTableCommand,
+} from "@aws-sdk/client-dynamodb";
 
 export class DynamoDbReportRepository implements Repository<Report> {
-  private readonly tableName = "pdf-gen-example.jobs";
+  public static readonly tableName = "pdf-gen-example.jobs";
 
-  constructor(private readonly dynamoDBClient: DynamoDBDocumentClient) {}
+  constructor(private readonly ddbDocClient: DynamoDBDocumentClient) {}
+
+  public static async init(
+    dynamoDBClient: DynamoDBClient,
+    ddbDocClient: DynamoDBDocumentClient
+  ) {
+    const listTablesCommand = new ListTablesCommand({});
+    const { TableNames } = await dynamoDBClient.send(listTablesCommand);
+
+    if (!TableNames?.includes(DynamoDbReportRepository.tableName)) {
+      const createTableCommand = new CreateTableCommand({
+        AttributeDefinitions: [
+          { AttributeName: "status", AttributeType: "S" },
+          { AttributeName: "created", AttributeType: "N" },
+        ],
+        TableName: DynamoDbReportRepository.tableName,
+        KeySchema: [
+          { KeyType: "HASH", AttributeName: "status" },
+          { KeyType: "RANGE", AttributeName: "created" },
+        ],
+        BillingMode: "PAY_PER_REQUEST",
+      });
+
+      await dynamoDBClient.send(createTableCommand);
+    }
+
+    return new DynamoDbReportRepository(ddbDocClient);
+  }
 
   async list({ limit, offset }: PaginationQuery) {
     const scanCommand = new ScanCommand({
-      TableName: this.tableName,
+      TableName: DynamoDbReportRepository.tableName,
+      // FilterExpression: "",
     });
-    const { Count, Items } = await this.dynamoDBClient.send(scanCommand);
+    const { Count, Items } = await this.ddbDocClient.send(scanCommand);
 
     return { list: (Items as Report[]) || [], total: Count || 0 };
   }
@@ -41,10 +74,10 @@ export class DynamoDbReportRepository implements Repository<Report> {
         status: "new",
       },
 
-      TableName: this.tableName,
+      TableName: DynamoDbReportRepository.tableName,
     });
 
-    await this.dynamoDBClient.send(putItem);
+    await this.ddbDocClient.send(putItem);
 
     return { id };
   }
