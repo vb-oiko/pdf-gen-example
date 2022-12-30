@@ -2,7 +2,8 @@ import { z } from "zod";
 import { TRPCInstance } from "..";
 import { FREQUENCIES, TICKERS } from "../constant/constants";
 import { TickerDate, Report, PaginatedResponse } from "../constant/types";
-import { ReportService } from "../service/ReportService";
+import { ReportGenerationService } from "../service/ReportGenerationService";
+import { ReportManagementService } from "../service/ReportManagementService";
 import { isValidTickerDate } from "../utils/isValidTickerDate";
 
 export const listReportsRequest = z.object({
@@ -19,14 +20,15 @@ export const createReportRequest = z.object({
 export default class ReportController {
   constructor(
     private readonly trpcInstance: TRPCInstance,
-    private readonly reportService: ReportService
+    private readonly reportManagementService: ReportManagementService,
+    private readonly reportGenerationService: ReportGenerationService
   ) {}
 
   listReports() {
     return this.trpcInstance.procedure
       .input(listReportsRequest)
       .query(async ({ input }): Promise<PaginatedResponse<Report>> => {
-        return this.reportService.list(input);
+        return this.reportManagementService.list(input);
       });
   }
 
@@ -34,7 +36,15 @@ export default class ReportController {
     return this.trpcInstance.procedure
       .input(createReportRequest)
       .mutation(async ({ input }): Promise<CreateReportResponse> => {
-        return this.reportService.create(input);
+        return this.reportManagementService.create(input);
+      });
+  }
+
+  generateReport() {
+    return this.trpcInstance.procedure
+      .input(z.void())
+      .mutation(async ({ input }): Promise<void> => {
+        return this.reportGenerationService.generateReport();
       });
   }
 }

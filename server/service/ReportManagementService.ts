@@ -1,6 +1,5 @@
 import {
   Frequency,
-  InsertEntity,
   PaginatedResponse,
   PaginationQuery,
   Report,
@@ -9,7 +8,7 @@ import {
   TickerDate,
 } from "../constant/types";
 
-export class ReportService {
+export class ReportManagementService {
   constructor(private readonly reportRepository: Repository<Report>) {}
 
   async list(query: PaginationQuery): Promise<PaginatedResponse<Report>> {
@@ -17,7 +16,7 @@ export class ReportService {
   }
 
   async create(payload: CreateReportPayload): Promise<{ id: string }> {
-    return this.reportRepository.create({ ...payload, status: "new" });
+    return this.reportRepository.create({ ...payload, jobStatus: "new" });
   }
 }
 

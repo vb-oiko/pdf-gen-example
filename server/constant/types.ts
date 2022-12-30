@@ -19,11 +19,11 @@ export interface BaseReport {
 }
 
 export interface UnfinishedReport extends BaseReport {
-  status: UnfinishedJobStatus;
+  jobStatus: UnfinishedJobStatus;
 }
 
 export interface FinishedReport extends BaseReport {
-  status: FinishedJobStatus;
+  jobStatus: FinishedJobStatus;
   url: string;
 }
 
@@ -56,4 +56,6 @@ export interface Repository<T extends AutoAssignedFieldsType> {
   update: (id: string, updateEntity: UpdateEntity<T>) => Promise<void>;
 
   getById: (id: string) => Promise<T>;
+
+  getOneCreatedAscWithNewStatus: () => Promise<Report | null>;
 }

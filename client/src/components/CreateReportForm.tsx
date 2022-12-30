@@ -1,5 +1,5 @@
 import React from "react";
-import { CreateReportPayload } from "../../../server/service/ReportService";
+import { CreateReportPayload } from "../../../server/service/ReportManagementService";
 import { trpc } from "../utils/trpc";
 
 export interface CreateReportFormProps {}
@@ -14,6 +14,7 @@ export const CreateReportForm: React.FC<CreateReportFormProps> = ({}) => {
   const [formData, setFormData] =
     React.useState<Partial<CreateReportPayload>>();
   const mutation = trpc.createReport.useMutation();
+  const generate = trpc.generateReport.useMutation();
   const { data: appSettings } = trpc.getAppSettings.useQuery();
 
   const handleChange = React.useCallback(
@@ -76,6 +77,10 @@ export const CreateReportForm: React.FC<CreateReportFormProps> = ({}) => {
         onClick={handleSubmit}
       >
         Create report
+      </button>
+
+      <button type="button" onClick={() => generate.mutate()}>
+        Generate report
       </button>
     </div>
   );

@@ -5,7 +5,8 @@ import * as dotenv from "dotenv";
 import AppSettingsController from "./controller/AppSettingsController";
 import ReportController from "./controller/ReportController";
 import { DynamoDbReportRepository } from "./repository/DynamoDbReportRepository";
-import { ReportService } from "./service/ReportService";
+import { ReportGenerationService } from "./service/ReportGenerationService";
+import { ReportManagementService } from "./service/ReportManagementService";
 import { createServer } from "./utils/createServer";
 import { getAwsConfiguration } from "./utils/getAwsConfiguration";
 
@@ -25,10 +26,15 @@ const reportRepository = await DynamoDbReportRepository.init(
   dynamoDBClient,
   ddbDocClient
 );
-const reportService = new ReportService(reportRepository);
+const reportManagementService = new ReportManagementService(reportRepository);
+const reportGenerationService = new ReportGenerationService(reportRepository);
 
 const trpcInstance = initTRPC.create();
-const reportController = new ReportController(trpcInstance, reportService);
+const reportController = new ReportController(
+  trpcInstance,
+  reportManagementService,
+  reportGenerationService
+);
 const appSettingsController = new AppSettingsController(trpcInstance);
 
 const router = trpcInstance.router;
@@ -36,6 +42,7 @@ const appRouter = router({
   listReports: reportController.listReports(),
   createReport: reportController.createReport(),
   getAppSettings: appSettingsController.getAppSettings(),
+  generateReport: reportController.generateReport(),
 });
 
 const server = createServer(appRouter);

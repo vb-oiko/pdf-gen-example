@@ -11,6 +11,7 @@ import {
   DynamoDBDocumentClient,
   PutCommand,
   ScanCommand,
+  QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 import {
   DynamoDBClient,
@@ -33,12 +34,12 @@ export class DynamoDbReportRepository implements Repository<Report> {
     if (!TableNames?.includes(DynamoDbReportRepository.tableName)) {
       const createTableCommand = new CreateTableCommand({
         AttributeDefinitions: [
-          { AttributeName: "status", AttributeType: "S" },
+          { AttributeName: "jobStatus", AttributeType: "S" },
           { AttributeName: "created", AttributeType: "N" },
         ],
         TableName: DynamoDbReportRepository.tableName,
         KeySchema: [
-          { KeyType: "HASH", AttributeName: "status" },
+          { KeyType: "HASH", AttributeName: "jobStatus" },
           { KeyType: "RANGE", AttributeName: "created" },
         ],
         BillingMode: "PAY_PER_REQUEST",
@@ -71,7 +72,7 @@ export class DynamoDbReportRepository implements Repository<Report> {
         ticker,
         frequency,
         date,
-        status: "new",
+        jobStatus: "new",
       },
 
       TableName: DynamoDbReportRepository.tableName,
@@ -86,5 +87,20 @@ export class DynamoDbReportRepository implements Repository<Report> {
 
   async getById(id: string): Promise<Report> {
     throw new Error("Not implemented");
+  }
+
+  async getOneCreatedAscWithNewStatus(): Promise<Report | null> {
+    const query = new QueryCommand({
+      TableName: DynamoDbReportRepository.tableName,
+      KeyConditionExpression: "jobStatus = :jobStatus",
+      Limit: 1,
+      ScanIndexForward: true, // true = ascending, false = descending
+      ExpressionAttributeValues: {
+        ":jobStatus": "new",
+      },
+    });
+
+    const { Items: items } = await this.ddbDocClient.send(query);
+    return items ? (items[0] as Report) : null;
   }
 }

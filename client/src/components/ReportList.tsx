@@ -28,7 +28,7 @@ export const ReportList = () => {
             <td>{report.date}</td>
             <td>{report.ticker}</td>
             <td>{report.frequency}</td>
-            <td>{report.status}</td>
+            <td>{report.jobStatus}</td>
           </tr>
         ))}
       </tbody>
