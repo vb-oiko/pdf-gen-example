@@ -44,7 +44,9 @@ export default class ReportController {
     return this.trpcInstance.procedure
       .input(z.void())
       .mutation(async ({ input }): Promise<void> => {
-        return this.reportGenerationService.generateReport();
+        const pathname =
+          await this.reportGenerationService.generateReportPdfFile();
+        console.warn({ pathname });
       });
   }
 }
