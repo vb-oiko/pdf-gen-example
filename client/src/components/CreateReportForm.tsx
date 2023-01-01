@@ -13,7 +13,14 @@ const isFormDataValid = (
 export const CreateReportForm: React.FC<CreateReportFormProps> = ({}) => {
   const [formData, setFormData] =
     React.useState<Partial<CreateReportPayload>>();
-  const mutation = trpc.createReport.useMutation();
+
+  const utils = trpc.useContext();
+  const createReport = trpc.createReport.useMutation({
+    onSuccess: () => {
+      utils.listReports.invalidate();
+    },
+  });
+
   const generate = trpc.generateReport.useMutation();
   const { data: appSettings } = trpc.getAppSettings.useQuery();
 
@@ -27,7 +34,7 @@ export const CreateReportForm: React.FC<CreateReportFormProps> = ({}) => {
 
   const handleSubmit = React.useCallback(() => {
     if (isFormDataValid(formData)) {
-      mutation.mutate(formData);
+      createReport.mutate(formData);
     }
   }, [formData]);
 
