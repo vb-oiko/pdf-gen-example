@@ -1,8 +1,22 @@
 import { trpc } from "../utils/trpc";
 import { format } from "date-fns";
+import React from "react";
+
+const POLLING_DELAY_MS = 10_000;
 
 export const ReportList = () => {
-  const { data } = trpc.listReports.useQuery({});
+  const { data, refetch } = trpc.listReports.useQuery({});
+  const intervalRef = React.useRef(0);
+
+  React.useEffect(() => {
+    intervalRef.current = window.setInterval(() => {
+      refetch();
+    }, POLLING_DELAY_MS);
+
+    return () => {
+      window.clearInterval(intervalRef.current);
+    };
+  }, []);
 
   if (!data) {
     return null;
