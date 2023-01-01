@@ -16,6 +16,7 @@ export interface BaseReport {
   date: TickerDate;
   ticker: Ticker;
   frequency: Frequency;
+  downloadUrl: undefined | string;
 }
 
 export interface UnfinishedReport extends BaseReport {
@@ -24,7 +25,7 @@ export interface UnfinishedReport extends BaseReport {
 
 export interface FinishedReport extends BaseReport {
   jobStatus: FinishedJobStatus;
-  url: string;
+  downloadUrl: string;
 }
 
 export type Report = UnfinishedReport | FinishedReport;
@@ -44,9 +45,7 @@ export type InsertEntity<T extends AutoAssignedFieldsType> = Omit<
   AutoAssignedFields
 >;
 
-export type UpdateEntity<T extends AutoAssignedFieldsType> = Partial<
-  Omit<T, AutoAssignedFields>
->;
+export type UpdateEntity<T> = Partial<Omit<T, AutoAssignedFields>>;
 
 export interface Repository<T extends AutoAssignedFieldsType> {
   list: ({ limit, offset }: PaginationQuery) => Promise<PaginatedResponse<T>>;
@@ -55,7 +54,5 @@ export interface Repository<T extends AutoAssignedFieldsType> {
 
   update: (id: string, updateEntity: UpdateEntity<T>) => Promise<void>;
 
-  getById: (id: string) => Promise<T>;
-
-  getOneCreatedAscWithNewStatus: () => Promise<Report | null>;
+  getOneOldestWaiting: () => Promise<Report | null>;
 }

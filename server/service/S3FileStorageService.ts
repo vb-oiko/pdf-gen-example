@@ -19,7 +19,7 @@ export class S3FileStorageService {
     await this.s3client.send(putObjectCommand);
   }
 
-  public getDownloadUrl(filename: string) {
+  public getDownloadUrl(filename: string): string {
     const { bucketName, region } = this.S3configuration;
     return `https://${bucketName}.s3.${region}.amazonaws.com/${filename}.pdf`;
   }

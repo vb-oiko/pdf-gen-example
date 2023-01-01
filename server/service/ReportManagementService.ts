@@ -1,3 +1,4 @@
+import { WAITING } from "../constant/constants";
 import {
   Frequency,
   PaginatedResponse,
@@ -16,7 +17,7 @@ export class ReportManagementService {
   }
 
   async create(payload: CreateReportPayload): Promise<{ id: string }> {
-    return this.reportRepository.create({ ...payload, jobStatus: "new" });
+    return this.reportRepository.create({ ...payload, jobStatus: WAITING });
   }
 }
 

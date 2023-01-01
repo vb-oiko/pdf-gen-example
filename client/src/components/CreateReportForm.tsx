@@ -21,7 +21,6 @@ export const CreateReportForm: React.FC<CreateReportFormProps> = ({}) => {
     },
   });
 
-  const generate = trpc.generateReport.useMutation();
   const { data: appSettings } = trpc.getAppSettings.useQuery();
 
   const handleChange = React.useCallback(
@@ -84,10 +83,6 @@ export const CreateReportForm: React.FC<CreateReportFormProps> = ({}) => {
         onClick={handleSubmit}
       >
         Create report
-      </button>
-
-      <button type="button" onClick={() => generate.mutate()}>
-        Generate report
       </button>
     </div>
   );

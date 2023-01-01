@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { TRPCInstance } from "..";
-import { FREQUENCIES, TICKERS } from "../constant/constants";
+import { FREQUENCIES, TICKERS, WORKING } from "../constant/constants";
 import { TickerDate, Report, PaginatedResponse } from "../constant/types";
+import { DynamoDbReportRepository } from "../repository/DynamoDbReportRepository";
 import { ReportGenerationService } from "../service/ReportGenerationService";
 import { ReportManagementService } from "../service/ReportManagementService";
 import { S3FileStorageService } from "../service/S3FileStorageService";
@@ -23,7 +24,8 @@ export default class ReportController {
     private readonly trpcInstance: TRPCInstance,
     private readonly reportManagementService: ReportManagementService,
     private readonly reportGenerationService: ReportGenerationService,
-    private readonly s3FileStorageService: S3FileStorageService
+    private readonly s3FileStorageService: S3FileStorageService,
+    private readonly reportRepository: DynamoDbReportRepository
   ) {}
 
   listReports() {
@@ -44,16 +46,19 @@ export default class ReportController {
 
   generateReport() {
     return this.trpcInstance.procedure
-      .input(z.void())
-      .mutation(async (): Promise<void> => {
-        const blob = await this.reportGenerationService.generateReportPdfFile();
+      .input(
+        z.object({
+          id: z.string(),
+        })
+      )
+      .mutation(async ({ input }): Promise<void> => {
+        await this.reportRepository.update(input.id, {
+          jobStatus: "finished",
+          downloadUrl: "wef23f23",
+        });
+        const report = await this.reportRepository.getOneOldestWaiting();
 
-        const downloadUrl = await this.s3FileStorageService.uploadFile(
-          blob,
-          "report.pdf"
-        );
-
-        console.warn({ downloadUrl });
+        console.warn({ report });
       });
   }
 }

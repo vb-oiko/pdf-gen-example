@@ -12,15 +12,18 @@ import {
   PutCommand,
   ScanCommand,
   QueryCommand,
+  UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import {
   DynamoDBClient,
   ListTablesCommand,
   CreateTableCommand,
 } from "@aws-sdk/client-dynamodb";
+import { WAITING } from "../constant/constants";
 
 export class DynamoDbReportRepository implements Repository<Report> {
   public static readonly tableName = "pdf-gen-example.jobs";
+  public static readonly indexName = "created-jobStatus-index";
 
   constructor(private readonly ddbDocClient: DynamoDBDocumentClient) {}
 
@@ -34,15 +37,23 @@ export class DynamoDbReportRepository implements Repository<Report> {
     if (!TableNames?.includes(DynamoDbReportRepository.tableName)) {
       const createTableCommand = new CreateTableCommand({
         AttributeDefinitions: [
-          { AttributeName: "jobStatus", AttributeType: "S" },
+          { AttributeName: "id", AttributeType: "S" },
           { AttributeName: "created", AttributeType: "N" },
+          { AttributeName: "jobStatus", AttributeType: "S" },
         ],
         TableName: DynamoDbReportRepository.tableName,
-        KeySchema: [
-          { KeyType: "HASH", AttributeName: "jobStatus" },
-          { KeyType: "RANGE", AttributeName: "created" },
-        ],
+        KeySchema: [{ KeyType: "HASH", AttributeName: "id" }],
         BillingMode: "PAY_PER_REQUEST",
+        GlobalSecondaryIndexes: [
+          {
+            IndexName: DynamoDbReportRepository.indexName,
+            Projection: { ProjectionType: "ALL" },
+            KeySchema: [
+              { AttributeName: "jobStatus", KeyType: "HASH" },
+              { AttributeName: "created", KeyType: "RANGE" },
+            ],
+          },
+        ],
       });
 
       await dynamoDBClient.send(createTableCommand);
@@ -72,7 +83,7 @@ export class DynamoDbReportRepository implements Repository<Report> {
         ticker,
         frequency,
         date,
-        jobStatus: "new",
+        jobStatus: WAITING,
       },
 
       TableName: DynamoDbReportRepository.tableName,
@@ -83,20 +94,58 @@ export class DynamoDbReportRepository implements Repository<Report> {
     return { id };
   }
 
-  async update(id: string, partialReport: UpdateEntity<Report>) {}
+  async update(id: string, partialReport: UpdateEntity<Report>): Promise<void> {
+    console.warn({ id });
 
-  async getById(id: string): Promise<Report> {
-    throw new Error("Not implemented");
+    const updateKeys = Object.keys(
+      partialReport
+    ) as (keyof UpdateEntity<Report>)[];
+
+    if (!updateKeys.length) {
+      return;
+    }
+
+    const updateExpressionParts = updateKeys.map((key) => `${key} = :${key}`);
+    const expressionAttributeValuesParts = updateKeys.map((key) => [
+      `:${key}`,
+      partialReport[key],
+    ]);
+
+    const updateCommand = new UpdateCommand({
+      TableName: DynamoDbReportRepository.tableName,
+      Key: {
+        id,
+      },
+      UpdateExpression: `set ${updateExpressionParts.join(", ")}`,
+      ExpressionAttributeValues: Object.fromEntries(
+        expressionAttributeValuesParts
+      ),
+    });
+
+    console.warn({
+      UpdateExpression: `set ${updateExpressionParts.join(", ")}`,
+      ExpressionAttributeValues: Object.fromEntries(
+        expressionAttributeValuesParts
+      ),
+    });
+
+    try {
+      const results = this.ddbDocClient.send(updateCommand);
+      console.warn({ results });
+    } catch (error) {
+      console.warn({ error });
+    }
   }
 
-  async getOneCreatedAscWithNewStatus(): Promise<Report | null> {
+  async getOneOldestWaiting(): Promise<Report | null> {
     const query = new QueryCommand({
       TableName: DynamoDbReportRepository.tableName,
+      IndexName: DynamoDbReportRepository.indexName,
       KeyConditionExpression: "jobStatus = :jobStatus",
       Limit: 1,
       ScanIndexForward: true, // true = ascending, false = descending
       ExpressionAttributeValues: {
-        ":jobStatus": "new",
+        ":jobStatus": WAITING,
       },
     });
 

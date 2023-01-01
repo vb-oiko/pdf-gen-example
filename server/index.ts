@@ -49,7 +49,8 @@ const reportController = new ReportController(
   trpcInstance,
   reportManagementService,
   reportGenerationService,
-  s3FileStorageService
+  s3FileStorageService,
+  reportRepository
 );
 const appSettingsController = new AppSettingsController(trpcInstance);
 

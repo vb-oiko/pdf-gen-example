@@ -13,16 +13,9 @@ export class ReportGenerationService {
     this.WORK_FOLDER = "../temp";
   }
 
-  async generateReportPdfFile() {
-    const nextReportToGenerate =
-      await this.reportRepository.getOneCreatedAscWithNewStatus();
-
-    if (!nextReportToGenerate) {
-      throw new Error("No report jobs in the queue");
-    }
-
-    const downloadUrl = this.getDownloadUrl(nextReportToGenerate);
-    const filename = this.getFilename(nextReportToGenerate);
+  async generateReportPdfFile(report: Report) {
+    const downloadUrl = this.getDownloadUrl(report);
+    const filename = this.getFilename(report);
 
     this.cleanWorkFolder();
     await this.downloadZipFile(downloadUrl, filename);
@@ -38,7 +31,7 @@ export class ReportGenerationService {
     )}.zip`;
   }
 
-  private getFilename(report: Report) {
+  public getFilename(report: Report) {
     const { date, frequency, ticker } = report;
     return `${ticker}-${frequency}-${date}`;
   }

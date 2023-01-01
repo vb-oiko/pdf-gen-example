@@ -1,6 +1,10 @@
 import { TickerDate } from "./types";
 
-export const JOB_STATUSES = ["new", "working", "finished"] as const;
+export const WAITING = "waiting";
+export const WORKING = "working";
+export const FINISHED = "finished";
+
+export const JOB_STATUSES = [WAITING, WORKING, FINISHED] as const;
 
 export const DATE_RANGE_START = "2021-03-01" as TickerDate;
 
@@ -19,3 +23,5 @@ export const FREQUENCIES = [
 ] as const;
 
 export const TICKERS = ["1INCHBTC", "1INCHBUSD"] as const;
+
+export const LOCK_EXPIRATION_TIMEOUT_MS = 5_000;
