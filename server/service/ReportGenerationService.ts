@@ -13,7 +13,7 @@ export class ReportGenerationService {
     this.WORK_FOLDER = "../temp";
   }
 
-  async generateReportPdfFile(): Promise<string> {
+  async generateReportPdfFile() {
     const nextReportToGenerate =
       await this.reportRepository.getOneCreatedAscWithNewStatus();
 
@@ -28,9 +28,7 @@ export class ReportGenerationService {
     await this.downloadZipFile(downloadUrl, filename);
     await this.unzipFileToCsvFile(filename);
     const rows = this.readCsvFile(filename);
-    const pathnameToPdfFile = await this.generatePdfFile(filename, rows);
-
-    return pathnameToPdfFile;
+    return this.generatePdfFile(filename, rows);
   }
 
   private getDownloadUrl(report: Report) {
@@ -132,11 +130,12 @@ export class ReportGenerationService {
   private async generatePdfFile(
     filename: string,
     rows: string[][]
-  ): Promise<string> {
+  ): Promise<Buffer> {
     let doc = new PDFDocumentWithTables({ margin: 30, size: "A4" });
 
     const pathname = path.resolve(this.WORK_FOLDER, `${filename}.pdf`);
-    doc.pipe(fs.createWriteStream(pathname));
+    const writeStream = fs.createWriteStream(pathname);
+    doc.pipe(writeStream);
 
     const table = {
       title: filename,
@@ -160,6 +159,11 @@ export class ReportGenerationService {
     await doc.table(table, {});
     doc.end();
 
-    return pathname;
+    return new Promise((resolve) => {
+      writeStream.on("finish", () => {
+        const blob = fs.readFileSync(pathname);
+        resolve(blob);
+      });
+    });
   }
 }

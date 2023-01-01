@@ -4,6 +4,7 @@ import { FREQUENCIES, TICKERS } from "../constant/constants";
 import { TickerDate, Report, PaginatedResponse } from "../constant/types";
 import { ReportGenerationService } from "../service/ReportGenerationService";
 import { ReportManagementService } from "../service/ReportManagementService";
+import { S3FileStorageService } from "../service/S3FileStorageService";
 import { isValidTickerDate } from "../utils/isValidTickerDate";
 
 export const listReportsRequest = z.object({
@@ -21,7 +22,8 @@ export default class ReportController {
   constructor(
     private readonly trpcInstance: TRPCInstance,
     private readonly reportManagementService: ReportManagementService,
-    private readonly reportGenerationService: ReportGenerationService
+    private readonly reportGenerationService: ReportGenerationService,
+    private readonly s3FileStorageService: S3FileStorageService
   ) {}
 
   listReports() {
@@ -43,10 +45,15 @@ export default class ReportController {
   generateReport() {
     return this.trpcInstance.procedure
       .input(z.void())
-      .mutation(async ({ input }): Promise<void> => {
-        const pathname =
-          await this.reportGenerationService.generateReportPdfFile();
-        console.warn({ pathname });
+      .mutation(async (): Promise<void> => {
+        const blob = await this.reportGenerationService.generateReportPdfFile();
+
+        const downloadUrl = await this.s3FileStorageService.uploadFile(
+          blob,
+          "report.pdf"
+        );
+
+        console.warn({ downloadUrl });
       });
   }
 }
