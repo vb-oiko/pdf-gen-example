@@ -11,6 +11,9 @@ import { ReportManagementService } from "./service/ReportManagementService";
 import { S3FileStorageService } from "./service/S3FileStorageService";
 import { createServer } from "./utils/createServer";
 import { getAwsConfiguration } from "./utils/getAwsConfiguration";
+import cron from "node-cron";
+import { ReportGenerationCron } from "./cron/ReportGenerationCron";
+import { DynamoDbLockRepository } from "./repository/DynamoDbLockRepository";
 
 dotenv.config();
 
@@ -37,6 +40,12 @@ const reportRepository = await DynamoDbReportRepository.init(
   dynamoDBClient,
   ddbDocClient
 );
+
+const lockRepository = await DynamoDbLockRepository.init(
+  dynamoDBClient,
+  ddbDocClient
+);
+
 const reportManagementService = new ReportManagementService(reportRepository);
 const reportGenerationService = new ReportGenerationService(reportRepository);
 const s3FileStorageService = new S3FileStorageService(
@@ -65,6 +74,25 @@ const appRouter = router({
 const server = createServer(appRouter);
 
 server.listen(2022);
+
+const reportGenerationCron = new ReportGenerationCron(
+  lockRepository,
+  reportRepository,
+  reportGenerationService,
+  s3FileStorageService
+);
+
+var task = cron.schedule(
+  "*/2 * * * * *",
+  () => {
+    reportGenerationCron.run();
+  },
+  {
+    scheduled: false,
+  }
+);
+
+task.start();
 
 export type AppRouter = typeof appRouter;
 export type TRPCInstance = typeof trpcInstance;

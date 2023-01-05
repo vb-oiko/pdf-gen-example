@@ -24,7 +24,7 @@ export default class ReportController {
     private readonly trpcInstance: TRPCInstance,
     private readonly reportManagementService: ReportManagementService,
     private readonly reportGenerationService: ReportGenerationService,
-    private readonly s3FileStorageService: S3FileStorageService,
+    private readonly fileStorageService: S3FileStorageService,
     private readonly reportRepository: DynamoDbReportRepository
   ) {}
 
@@ -52,11 +52,25 @@ export default class ReportController {
         })
       )
       .mutation(async ({ input }): Promise<void> => {
-        await this.reportRepository.update(input.id, {
-          jobStatus: "finished",
-          downloadUrl: "wef23f23",
-        });
         const report = await this.reportRepository.getOneOldestWaiting();
+        if (!report) {
+          console.warn("no reports for generation");
+
+          return;
+        }
+
+        const pdfBlob =
+          await this.reportGenerationService.generateReportPdfFile(report);
+
+        const filename = this.reportGenerationService.getFilename(report);
+
+        await this.fileStorageService.uploadFile(pdfBlob, filename);
+        const downloadUrl = this.fileStorageService.getDownloadUrl(filename);
+
+        await this.reportRepository.update(report.id, {
+          jobStatus: "finished",
+          downloadUrl,
+        });
 
         console.warn({ report });
       });

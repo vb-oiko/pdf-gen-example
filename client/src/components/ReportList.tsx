@@ -2,7 +2,7 @@ import { trpc } from "../utils/trpc";
 import { format } from "date-fns";
 import React from "react";
 
-const POLLING_DELAY_MS = 1000_000;
+const POLLING_DELAY_MS = 5_000;
 
 export const ReportList = () => {
   const { data, refetch } = trpc.listReports.useQuery({});
@@ -29,6 +29,7 @@ export const ReportList = () => {
     <table>
       <thead>
         <tr>
+          <th>ID</th>
           <th>Created</th>
           <th>Date</th>
           <th>Ticker</th>
@@ -50,12 +51,13 @@ export const ReportList = () => {
             downloadUrl,
           }) => (
             <tr key={id}>
+              <td>{id.slice(0, 6)}</td>
               <td>{format(new Date(created), "yyyy-MM-dd HH:mm:ss")}</td>
               <td>{date}</td>
               <td>{ticker}</td>
               <td>{frequency}</td>
               <td>{jobStatus}</td>
-              <td>{downloadUrl ? downloadUrl : ""}</td>
+              <td>{downloadUrl ? <a href={downloadUrl}>download</a> : ""}</td>
               <td>
                 <span role="button" onClick={() => generate.mutate({ id: id })}>
                   Start

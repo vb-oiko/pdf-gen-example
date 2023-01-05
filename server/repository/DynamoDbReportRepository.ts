@@ -95,8 +95,6 @@ export class DynamoDbReportRepository implements Repository<Report> {
   }
 
   async update(id: string, partialReport: UpdateEntity<Report>): Promise<void> {
-    console.warn({ id });
-
     const updateKeys = Object.keys(
       partialReport
     ) as (keyof UpdateEntity<Report>)[];
@@ -122,19 +120,7 @@ export class DynamoDbReportRepository implements Repository<Report> {
       ),
     });
 
-    console.warn({
-      UpdateExpression: `set ${updateExpressionParts.join(", ")}`,
-      ExpressionAttributeValues: Object.fromEntries(
-        expressionAttributeValuesParts
-      ),
-    });
-
-    try {
-      const results = this.ddbDocClient.send(updateCommand);
-      console.warn({ results });
-    } catch (error) {
-      console.warn({ error });
-    }
+    await this.ddbDocClient.send(updateCommand);
   }
 
   async getOneOldestWaiting(): Promise<Report | null> {

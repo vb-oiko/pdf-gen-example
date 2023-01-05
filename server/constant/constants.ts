@@ -3,8 +3,9 @@ import { TickerDate } from "./types";
 export const WAITING = "waiting";
 export const WORKING = "working";
 export const FINISHED = "finished";
+export const FAILED = "finished";
 
-export const JOB_STATUSES = [WAITING, WORKING, FINISHED] as const;
+export const JOB_STATUSES = [WAITING, WORKING, FINISHED, FAILED] as const;
 
 export const DATE_RANGE_START = "2021-03-01" as TickerDate;
 
