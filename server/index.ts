@@ -13,7 +13,7 @@ import { createServer } from "./utils/createServer";
 import { getAwsConfiguration } from "./utils/getAwsConfiguration";
 import cron from "node-cron";
 import { ReportGenerationCron } from "./cron/ReportGenerationCron";
-import { DynamoDbLockRepository } from "./repository/DynamoDbLockRepository";
+import { LocalLockService } from "./service/LocalLockService";
 
 dotenv.config();
 
@@ -37,11 +37,6 @@ const dynamoDBClient = new DynamoDBClient(awsConfiguration);
 const ddbDocClient = DynamoDBDocumentClient.from(dynamoDBClient);
 
 const reportRepository = await DynamoDbReportRepository.init(
-  dynamoDBClient,
-  ddbDocClient
-);
-
-const lockRepository = await DynamoDbLockRepository.init(
   dynamoDBClient,
   ddbDocClient
 );
@@ -75,8 +70,9 @@ const server = createServer(appRouter);
 
 server.listen(2022);
 
+const lockService = new LocalLockService();
 const reportGenerationCron = new ReportGenerationCron(
-  lockRepository,
+  lockService,
   reportRepository,
   reportGenerationService,
   s3FileStorageService

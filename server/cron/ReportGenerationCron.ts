@@ -1,15 +1,10 @@
-import {
-  FAILED,
-  FINISHED,
-  LOCK_EXPIRATION_TIMEOUT_MS,
-  WORKING,
-} from "../constant/constants";
+import { FAILED, FINISHED, WORKING } from "../constant/constants";
 import { Report, Repository } from "../constant/types";
 import { ReportGenerationService } from "../service/ReportGenerationService";
 
 export class ReportGenerationCron {
   constructor(
-    private readonly lockRepository: LockRepository,
+    private readonly lockService: LockService,
     private readonly reportRepository: Repository<Report>,
     private readonly reportGenerationService: ReportGenerationService,
     private readonly fileStorageService: FileStorageService
@@ -18,64 +13,53 @@ export class ReportGenerationCron {
   public async run() {
     console.warn("Cron started");
 
-    const now = Date.now();
-    const lock = await this.lockRepository.getLock();
-
-    if (lock) {
-      const lockLifeTime = now - lock.timestamp;
-      console.warn("Lock lifetime: ", lockLifeTime);
-
-      if (lockLifeTime < LOCK_EXPIRATION_TIMEOUT_MS) {
-        console.warn("Cron stopped: previous one is still working");
-        return;
-      }
-
-      if (lockLifeTime >= LOCK_EXPIRATION_TIMEOUT_MS) {
-        console.warn("Remove expired lock");
-        await this.lockRepository.deleteLock();
-      }
+    if (this.lockService.isLocked()) {
+      return;
     }
 
-    await this.lockRepository.createLock();
+    this.lockService.acquireLock();
 
-    while (true) {
-      const report = await this.reportRepository.getOneOldestWaiting();
+    await this.processJob();
 
-      if (!report) {
-        console.warn("Cron stopped: no more jobs");
-        break;
-      }
+    this.lockService.releaseLock();
 
-      console.warn("Task processing started: ", report.id.slice(0, 6));
-
-      await this.reportRepository.update(report.id, {
-        jobStatus: WORKING,
-      });
-
-      let downloadUrl: string | undefined;
-
-      try {
-        downloadUrl = await this.processAnsUploadReport(report);
-      } catch (error) {
-        await this.reportRepository.update(report.id, {
-          jobStatus: FAILED,
-        });
-        break;
-      }
-
-      if (!downloadUrl) {
-        console.warn("No download url: ", report.id.slice(0, 6));
-      }
-
-      await this.reportRepository.update(report.id, {
-        jobStatus: FINISHED,
-        downloadUrl,
-      });
-      console.warn("Task processing finished: ", report.id.slice(0, 6));
-    }
-
-    await this.lockRepository.deleteLock();
     console.warn("Cron finished");
+  }
+
+  private async processJob() {
+    const report = await this.reportRepository.getOneOldestWaiting();
+
+    if (!report) {
+      console.warn("No more jobs");
+      return;
+    }
+
+    console.warn("Task processing started: ", report.id.slice(0, 6));
+
+    await this.reportRepository.update(report.id, {
+      jobStatus: WORKING,
+    });
+
+    let downloadUrl: string | undefined;
+
+    try {
+      downloadUrl = await this.processAnsUploadReport(report);
+    } catch (error) {
+      await this.reportRepository.update(report.id, {
+        jobStatus: FAILED,
+      });
+      return;
+    }
+
+    if (!downloadUrl) {
+      console.warn("No download url: ", report.id.slice(0, 6));
+    }
+
+    await this.reportRepository.update(report.id, {
+      jobStatus: FINISHED,
+      downloadUrl,
+    });
+    console.warn("Task processing finished: ", report.id.slice(0, 6));
   }
 
   private async processAnsUploadReport(report: Report): Promise<string> {
@@ -93,13 +77,13 @@ export class ReportGenerationCron {
   }
 }
 
-export interface LockRepository {
-  createLock(): Promise<void>;
-  deleteLock(): Promise<void>;
-  getLock(): Promise<{ timestamp: number } | null>;
-}
-
 export interface FileStorageService {
   uploadFile(blob: Buffer, filename: string): Promise<void>;
   getDownloadUrl(filename: string): string;
+}
+
+export interface LockService {
+  acquireLock(): void;
+  releaseLock(): void;
+  isLocked(): boolean;
 }
