@@ -74,14 +74,20 @@ export class DynamoDbReportRepository implements ReportRepository {
     return new DynamoDbReportRepository(ddbDocClient);
   }
 
-  async list({ limit, offset }: PaginationQuery) {
+  async list({ limit, exclusiveStartKey }: PaginationQuery) {
     const scanCommand = new ScanCommand({
       TableName: DynamoDbReportRepository.tableName,
-      // FilterExpression: "",
+      ExclusiveStartKey: exclusiveStartKey,
+      Limit: limit,
     });
-    const { Count, Items } = await this.ddbDocClient.send(scanCommand);
+    const { Items, LastEvaluatedKey } = await this.ddbDocClient.send(
+      scanCommand
+    );
 
-    return { list: (Items as Report[]) || [], total: Count || 0 };
+    return {
+      list: (Items as Report[]) || [],
+      lastEvaluatedKey: LastEvaluatedKey,
+    };
   }
 
   async create(insertReport: InsertEntity<Report>) {

@@ -32,10 +32,13 @@ export type Report = UnfinishedReport | FinishedReport;
 
 export type PaginationQuery = {
   limit?: number;
-  offset?: number;
+  exclusiveStartKey?: Record<string, any>;
 };
 
-export type PaginatedResponse<T> = { list: T[]; total: number };
+export type PaginatedResponse<T> = {
+  list: T[];
+  lastEvaluatedKey?: Record<string, any>;
+};
 
 type AutoAssignedFieldsType = { id: string; created: number };
 type AutoAssignedFields = keyof AutoAssignedFieldsType;
@@ -50,7 +53,7 @@ export type UpdateEntity<T> = Partial<Omit<T, AutoAssignedFields>>;
 export interface ReportRepository {
   list: ({
     limit,
-    offset,
+    exclusiveStartKey,
   }: PaginationQuery) => Promise<PaginatedResponse<Report>>;
 
   create: (insertEntity: InsertEntity<Report>) => Promise<{ id: string }>;
