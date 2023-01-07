@@ -47,12 +47,15 @@ export type InsertEntity<T extends AutoAssignedFieldsType> = Omit<
 
 export type UpdateEntity<T> = Partial<Omit<T, AutoAssignedFields>>;
 
-export interface Repository<T extends AutoAssignedFieldsType> {
-  list: ({ limit, offset }: PaginationQuery) => Promise<PaginatedResponse<T>>;
+export interface ReportRepository {
+  list: ({
+    limit,
+    offset,
+  }: PaginationQuery) => Promise<PaginatedResponse<Report>>;
 
-  create: (insertEntity: InsertEntity<T>) => Promise<{ id: string }>;
+  create: (insertEntity: InsertEntity<Report>) => Promise<{ id: string }>;
 
-  update: (id: string, updateEntity: UpdateEntity<T>) => Promise<void>;
+  update: (id: string, updateEntity: UpdateEntity<Report>) => Promise<void>;
 
   getOneOldestWaiting: () => Promise<Report | null>;
 }

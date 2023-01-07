@@ -2,7 +2,7 @@ import {
   InsertEntity,
   PaginationQuery,
   Report,
-  Repository,
+  ReportRepository,
   UpdateEntity,
 } from "../constant/types";
 
@@ -21,7 +21,7 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { WAITING } from "../constant/constants";
 
-export class DynamoDbReportRepository implements Repository<Report> {
+export class DynamoDbReportRepository implements ReportRepository {
   public static readonly tableName = "pdf-gen-example.jobs";
   public static readonly indexName = "created-jobStatus-index";
 

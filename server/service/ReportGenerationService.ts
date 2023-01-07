@@ -4,12 +4,12 @@ import StreamZip from "node-stream-zip";
 import path from "path";
 import PDFDocumentWithTables from "pdfkit-table";
 
-import { Report, Repository } from "../constant/types";
+import { Report, ReportRepository } from "../constant/types";
 
 export class ReportGenerationService {
   private readonly WORK_FOLDER: string;
 
-  constructor(private readonly reportRepository: Repository<Report>) {
+  constructor(private readonly reportRepository: ReportRepository) {
     this.WORK_FOLDER = "../temp";
   }
 

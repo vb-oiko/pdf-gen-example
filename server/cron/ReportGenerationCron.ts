@@ -1,11 +1,11 @@
 import { FAILED, FINISHED, WORKING } from "../constant/constants";
-import { Report, Repository } from "../constant/types";
+import { Report, ReportRepository } from "../constant/types";
 import { ReportGenerationService } from "../service/ReportGenerationService";
 
 export class ReportGenerationCron {
   constructor(
     private readonly lockService: LockService,
-    private readonly reportRepository: Repository<Report>,
+    private readonly reportRepository: ReportRepository,
     private readonly reportGenerationService: ReportGenerationService,
     private readonly fileStorageService: FileStorageService
   ) {}

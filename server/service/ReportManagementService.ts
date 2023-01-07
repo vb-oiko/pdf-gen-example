@@ -3,11 +3,11 @@ import {
   PaginatedResponse,
   PaginationQuery,
   Report,
-  Repository,
+  ReportRepository,
 } from "../constant/types";
 
 export class ReportManagementService {
-  constructor(private readonly reportRepository: Repository<Report>) {}
+  constructor(private readonly reportRepository: ReportRepository) {}
 
   async list(query: PaginationQuery): Promise<PaginatedResponse<Report>> {
     return this.reportRepository.list(query);
