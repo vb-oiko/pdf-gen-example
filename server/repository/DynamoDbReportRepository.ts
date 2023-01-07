@@ -18,6 +18,7 @@ import {
   DynamoDBClient,
   ListTablesCommand,
   CreateTableCommand,
+  waitUntilTableExists,
 } from "@aws-sdk/client-dynamodb";
 import { WAITING } from "../constant/constants";
 
@@ -57,6 +58,17 @@ export class DynamoDbReportRepository implements ReportRepository {
       });
 
       await dynamoDBClient.send(createTableCommand);
+    }
+
+    const waiterResult = await waitUntilTableExists(
+      { client: dynamoDBClient, maxWaitTime: 120 },
+      { TableName: DynamoDbReportRepository.tableName }
+    );
+
+    if (waiterResult.state !== "SUCCESS") {
+      throw new Error(
+        `Failed to create DynamoDB table. State: ${waiterResult.state}, reason: ${waiterResult.reason}`
+      );
     }
 
     return new DynamoDbReportRepository(ddbDocClient);
