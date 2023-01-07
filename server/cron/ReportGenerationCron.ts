@@ -11,26 +11,19 @@ export class ReportGenerationCron {
   ) {}
 
   public async run() {
-    console.warn("Cron started");
-
     if (this.lockService.isLocked()) {
       return;
     }
 
     this.lockService.acquireLock();
-
     await this.processJob();
-
     this.lockService.releaseLock();
-
-    console.warn("Cron finished");
   }
 
   private async processJob() {
     const report = await this.reportRepository.getOneOldestWaiting();
 
     if (!report) {
-      console.warn("No more jobs");
       return;
     }
 

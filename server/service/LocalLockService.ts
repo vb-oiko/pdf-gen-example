@@ -19,12 +19,10 @@ export class LocalLockService implements LockService {
     }
 
     this.writeLock();
-    console.warn("Lock acquired");
   }
 
   public releaseLock() {
     unlinkSync(this.pathname);
-    console.warn("Lock released");
   }
 
   public isLocked(): boolean {
@@ -37,11 +35,8 @@ export class LocalLockService implements LockService {
     const lockLifespan = now - lock;
 
     if (lockLifespan < this.timeoutMs) {
-      console.warn("Lock exists");
-
       return true;
     }
-    console.warn("Lock is expired");
 
     return false;
   }
@@ -58,7 +53,6 @@ export class LocalLockService implements LockService {
       });
 
       const timestamp = Number(content);
-      console.warn(timestamp);
 
       return timestamp;
     } catch (err) {
