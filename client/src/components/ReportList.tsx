@@ -2,12 +2,11 @@ import { trpc } from "../utils/trpc";
 import { format } from "date-fns";
 import React from "react";
 
-const POLLING_DELAY_MS = 5_000;
+const POLLING_DELAY_MS = 1_000;
 
 export const ReportList = () => {
   const { data, refetch } = trpc.listReports.useQuery({});
   const intervalRef = React.useRef(0);
-  const generate = trpc.generateReport.useMutation();
 
   React.useEffect(() => {
     intervalRef.current = window.setInterval(() => {
@@ -36,7 +35,6 @@ export const ReportList = () => {
           <th>Frequency</th>
           <th>Status</th>
           <th>Download URL</th>
-          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -58,11 +56,6 @@ export const ReportList = () => {
               <td>{frequency}</td>
               <td>{jobStatus}</td>
               <td>{downloadUrl ? <a href={downloadUrl}>download</a> : ""}</td>
-              <td>
-                <span role="button" onClick={() => generate.mutate({ id: id })}>
-                  Start
-                </span>
-              </td>
             </tr>
           )
         )}

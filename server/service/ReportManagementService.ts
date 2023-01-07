@@ -1,12 +1,9 @@
 import { WAITING } from "../constant/constants";
 import {
-  Frequency,
   PaginatedResponse,
   PaginationQuery,
   Report,
   Repository,
-  Ticker,
-  TickerDate,
 } from "../constant/types";
 
 export class ReportManagementService {
@@ -21,8 +18,4 @@ export class ReportManagementService {
   }
 }
 
-export type CreateReportPayload = {
-  ticker: Ticker;
-  date: TickerDate;
-  frequency: Frequency;
-};
+export type CreateReportPayload = Pick<Report, "ticker" | "date" | "frequency">;

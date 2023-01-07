@@ -26,3 +26,6 @@ export const FREQUENCIES = [
 export const TICKERS = ["1INCHBTC", "1INCHBUSD"] as const;
 
 export const LOCK_EXPIRATION_TIMEOUT_MS = 5_000;
+export const REPORT_GENERATION_CRON_EXPRESSION = "*/2 * * * * *"; // every 2 seconds
+
+export const SERVER_PORT = 2022;

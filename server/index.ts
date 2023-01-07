@@ -14,6 +14,10 @@ import { getAwsConfiguration } from "./utils/getAwsConfiguration";
 import cron from "node-cron";
 import { ReportGenerationCron } from "./cron/ReportGenerationCron";
 import { LocalLockService } from "./service/LocalLockService";
+import {
+  REPORT_GENERATION_CRON_EXPRESSION,
+  SERVER_PORT,
+} from "./constant/constants";
 
 dotenv.config();
 
@@ -43,18 +47,12 @@ const reportRepository = await DynamoDbReportRepository.init(
 
 const reportManagementService = new ReportManagementService(reportRepository);
 const reportGenerationService = new ReportGenerationService(reportRepository);
-const s3FileStorageService = new S3FileStorageService(
-  s3client,
-  s3configuration
-);
+const fileStorageService = new S3FileStorageService(s3client, s3configuration);
 
 const trpcInstance = initTRPC.create();
 const reportController = new ReportController(
   trpcInstance,
-  reportManagementService,
-  reportGenerationService,
-  s3FileStorageService,
-  reportRepository
+  reportManagementService
 );
 const appSettingsController = new AppSettingsController(trpcInstance);
 
@@ -63,32 +61,23 @@ const appRouter = router({
   listReports: reportController.listReports(),
   createReport: reportController.createReport(),
   getAppSettings: appSettingsController.getAppSettings(),
-  generateReport: reportController.generateReport(),
 });
 
 const server = createServer(appRouter);
 
-server.listen(2022);
+server.listen(SERVER_PORT);
 
 const lockService = new LocalLockService();
 const reportGenerationCron = new ReportGenerationCron(
   lockService,
   reportRepository,
   reportGenerationService,
-  s3FileStorageService
+  fileStorageService
 );
 
-var task = cron.schedule(
-  "*/2 * * * * *",
-  () => {
-    reportGenerationCron.run();
-  },
-  {
-    scheduled: false,
-  }
-);
-
-task.start();
+cron.schedule(REPORT_GENERATION_CRON_EXPRESSION, () => {
+  reportGenerationCron.run();
+});
 
 export type AppRouter = typeof appRouter;
 export type TRPCInstance = typeof trpcInstance;

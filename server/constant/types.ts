@@ -16,7 +16,7 @@ export interface BaseReport {
   date: TickerDate;
   ticker: Ticker;
   frequency: Frequency;
-  downloadUrl: undefined | string;
+  downloadUrl?: string;
 }
 
 export interface UnfinishedReport extends BaseReport {
