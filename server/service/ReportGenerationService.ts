@@ -15,7 +15,9 @@ export class ReportGenerationService {
     }
   }
 
-  async generateReportPdfFile(report: Report) {
+  async generateReportPdfFile(
+    report: Report
+  ): Promise<{ pdfBlob: Buffer; filename: string }> {
     const downloadUrl = this.getDownloadUrl(report);
     const filename = this.getFilename(report);
 
@@ -23,7 +25,9 @@ export class ReportGenerationService {
     await this.downloadZipFile(downloadUrl, filename);
     await this.unzipFileToCsvFile(filename);
     const rows = this.readCsvFile(filename);
-    return this.generatePdfFile(filename, rows);
+    const pdfBlob = await this.generatePdfFile(filename, rows);
+
+    return { pdfBlob, filename };
   }
 
   private getDownloadUrl(report: Report) {
@@ -33,7 +37,7 @@ export class ReportGenerationService {
     )}.zip`;
   }
 
-  public getFilename(report: Report) {
+  private getFilename(report: Report) {
     const { date, frequency, ticker } = report;
     return `${ticker}-${frequency}-${date}`;
   }

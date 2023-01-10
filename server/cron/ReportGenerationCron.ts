@@ -61,11 +61,8 @@ export class ReportGenerationCron {
   }
 
   private async processAnsUploadReport(report: Report): Promise<string> {
-    const pdfBlob = await this.reportGenerationService.generateReportPdfFile(
-      report
-    );
-
-    const filename = this.reportGenerationService.getFilename(report);
+    const { pdfBlob, filename } =
+      await this.reportGenerationService.generateReportPdfFile(report);
 
     await this.fileStorageService.uploadFile(pdfBlob, filename);
 
