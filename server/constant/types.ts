@@ -62,3 +62,14 @@ export interface ReportRepository {
 
   getOneOldestWaiting: () => Promise<Report | null>;
 }
+
+export interface FileStorageService {
+  uploadFile(blob: Buffer, filename: string): Promise<void>;
+  getDownloadUrl(filename: string): string;
+}
+
+export interface LockService {
+  acquireLock(): void;
+  releaseLock(): void;
+  isLocked(): boolean;
+}

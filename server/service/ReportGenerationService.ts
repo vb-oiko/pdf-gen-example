@@ -7,10 +7,12 @@ import PDFDocumentWithTables from "pdfkit-table";
 import { Report, ReportRepository } from "../constant/types";
 
 export class ReportGenerationService {
-  private readonly WORK_FOLDER: string;
+  private readonly WORK_FOLDER = "../temp";
 
-  constructor(private readonly reportRepository: ReportRepository) {
-    this.WORK_FOLDER = "../temp";
+  constructor() {
+    if (!fs.existsSync(this.WORK_FOLDER)) {
+      fs.mkdirSync(this.WORK_FOLDER);
+    }
   }
 
   async generateReportPdfFile(report: Report) {
@@ -25,7 +27,7 @@ export class ReportGenerationService {
   }
 
   private getDownloadUrl(report: Report) {
-    const { date, frequency, ticker } = report;
+    const { frequency, ticker } = report;
     return `https://data.binance.vision/data/spot/daily/klines/${ticker}/${frequency}/${this.getFilename(
       report
     )}.zip`;

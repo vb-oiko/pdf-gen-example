@@ -46,7 +46,7 @@ const reportRepository = await DynamoDbReportRepository.init(
 );
 
 const reportManagementService = new ReportManagementService(reportRepository);
-const reportGenerationService = new ReportGenerationService(reportRepository);
+const reportGenerationService = new ReportGenerationService();
 const fileStorageService = new S3FileStorageService(s3client, s3configuration);
 
 const trpcInstance = initTRPC.create();

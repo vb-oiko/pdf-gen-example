@@ -1,5 +1,10 @@
 import { FAILED, FINISHED, WORKING } from "../constant/constants";
-import { Report, ReportRepository } from "../constant/types";
+import {
+  FileStorageService,
+  LockService,
+  Report,
+  ReportRepository,
+} from "../constant/types";
 import { ReportGenerationService } from "../service/ReportGenerationService";
 
 export class ReportGenerationCron {
@@ -68,15 +73,4 @@ export class ReportGenerationCron {
 
     return downloadUrl;
   }
-}
-
-export interface FileStorageService {
-  uploadFile(blob: Buffer, filename: string): Promise<void>;
-  getDownloadUrl(filename: string): string;
-}
-
-export interface LockService {
-  acquireLock(): void;
-  releaseLock(): void;
-  isLocked(): boolean;
 }

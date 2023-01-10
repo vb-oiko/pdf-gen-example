@@ -20,7 +20,7 @@ Two way communication between server and the client can be fulfilled either by u
 
 The downloadable files should be stored somewhere and I decided to use AWS S3 for that. As a DB for the project I chose Dynamo DB, as I was interested to play with noSQL database and also because I heard this buzz word recently.
 
-And as for the queue processing I decided to use a cron job and a table to store the status of the job. As lock for the cron I decided to use a local temporary file with a timestamp inside to be able to track if some job hung up.
+And as for the queue processing I decided to use a cron job and a table to store the status of the job. As lock for the cron I decided to use a rough and dirty solution - a local temporary file with a timestamp inside to be able to track if some job hung up. For a production ready solution I would use Redis/Zookeeper.
 
 I decided to use React, Vite, PicoCSS for the client. And tRPC and a monorepo to have server-client type safety.
 
