@@ -64,8 +64,7 @@ export interface ReportRepository {
 }
 
 export interface FileStorageService {
-  uploadFile(blob: Buffer, filename: string): Promise<void>;
-  getDownloadUrl(filename: string): string;
+  uploadFile(blob: Buffer, filename: string): Promise<string>;
 }
 
 export interface LockService {

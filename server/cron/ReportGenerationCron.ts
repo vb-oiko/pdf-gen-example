@@ -64,9 +64,10 @@ export class ReportGenerationCron {
     const { pdfBlob, filename } =
       await this.reportGenerationService.generateReportPdfFile(report);
 
-    await this.fileStorageService.uploadFile(pdfBlob, filename);
-
-    const downloadUrl = this.fileStorageService.getDownloadUrl(filename);
+    const downloadUrl = await this.fileStorageService.uploadFile(
+      pdfBlob,
+      filename
+    );
 
     return downloadUrl;
   }
