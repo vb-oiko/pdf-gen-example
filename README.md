@@ -22,9 +22,11 @@ The downloadable files should be stored somewhere and I decided to use AWS S3 fo
 
 And as for the queue processing I decided to use a cron job and a table to store the status of the job. As lock for the cron I decided to use a rough and dirty solution - a local temporary file with a timestamp inside to be able to track if some job hung up. For a production ready solution I would use Redis/Zookeeper.
 
-I decided to use React, Vite, PicoCSS for the client. And tRPC and a monorepo to have server-client type safety.
+I used rough and dirty solution for error handling and logging as well - simple console logging. Production ready application would probably used Kibana.
 
 Implementing the actual data downloading, unzipping and generating PDF file required some playing around and I decided to stop on the first workable solution which is creating intermediate files in a local project folder. Maybe a better solution would be to try to implement it with buffers.
+
+I decided to use React, Vite, PicoCSS for the client. And tRPC and a monorepo to have server-client type safety.
 
 ## How to run project locally
 ### Playing around

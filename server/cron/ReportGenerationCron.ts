@@ -26,38 +26,61 @@ export class ReportGenerationCron {
   }
 
   private async processJob() {
-    const report = await this.reportRepository.getOneOldestWaiting();
+    let report: Report | null = null;
+
+    try {
+      report = await this.reportRepository.getOneOldestWaiting();
+    } catch (error) {
+      console.warn("Failed to get next task to process", error);
+      return;
+    }
 
     if (!report) {
       return;
     }
+    console.warn("Task processing started: ", report.id);
 
-    console.warn("Task processing started: ", report.id.slice(0, 6));
-
-    await this.reportRepository.update(report.id, {
-      jobStatus: WORKING,
-    });
+    try {
+      await this.reportRepository.update(report.id, {
+        jobStatus: WORKING,
+      });
+    } catch (error) {
+      console.warn("Failed to update task status", error);
+    }
 
     let downloadUrl: string | undefined;
 
     try {
       downloadUrl = await this.processAnsUploadReport(report);
     } catch (error) {
-      await this.reportRepository.update(report.id, {
-        jobStatus: FAILED,
-      });
+      console.warn("Task processing failed");
+
+      try {
+        await this.reportRepository.update(report.id, {
+          jobStatus: FAILED,
+        });
+      } catch (error) {
+        console.warn("Failed to update task status", error);
+      }
+
       return;
     }
 
     if (!downloadUrl) {
-      console.warn("No download url: ", report.id.slice(0, 6));
+      console.warn("No download url: ", report.id);
     }
 
-    await this.reportRepository.update(report.id, {
-      jobStatus: FINISHED,
-      downloadUrl,
-    });
-    console.warn("Task processing finished: ", report.id.slice(0, 6));
+    try {
+      await this.reportRepository.update(report.id, {
+        jobStatus: FINISHED,
+        downloadUrl,
+      });
+    } catch (error) {
+      console.warn("Failed to update task status", error);
+    }
+
+    console.warn("Task processing finished: ", report.id);
+    return;
   }
 
   private async processAnsUploadReport(report: Report): Promise<string> {
